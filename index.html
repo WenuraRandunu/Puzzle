@@ -1,0 +1,1084 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101b2b">
+<meta name="description" content="The Pulse - APS Crossword Challenge">
+<title>The Pulse | APS Crossword Challenge</title>
+
+<style>
+:root {
+  --page: #101b2b;
+  --panel: #1a2b40;
+  --panel-border: #344a63;
+  --ink: #f2f6fc;
+  --muted: #c0cede;
+  --blue: #247fc2;
+  --navy: #10243b;
+  --good: #bde9ca;
+  --bad: #ffc7c7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+}
+
+header {
+  background: #0a1422;
+  color: white;
+  text-align: center;
+  padding: 22px 14px;
+  border-bottom: 1px solid #31465f;
+}
+
+header h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 34px);
+  letter-spacing: 1px;
+}
+
+header p {
+  margin: 7px 0 0;
+  color: #d8e7f5;
+}
+
+.wrap {
+  max-width: 1050px;
+  margin: auto;
+  padding: 14px;
+}
+
+nav {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #17283d;
+  border-bottom: 1px solid #40546b;
+  box-shadow: 0 2px 7px #102a430d;
+}
+
+nav button {
+  flex: 1;
+  min-height: 52px;
+  border: 0;
+  background: #17283d;
+  color: #f2f6fc;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+nav button[aria-selected="true"] {
+  background: var(--blue);
+  color: white;
+}
+
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
+
+.tab[hidden] {
+  display: none !important;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 13px;
+  padding: 17px;
+  margin: 0 auto 14px;
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 2px 12px #102a430c;
+}
+
+.panel h2 {
+  font-size: 20px;
+  margin: 0 0 10px;
+  color: white;
+}
+
+.muted {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.grid-scroll {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: auto;
+  padding: 8px 0 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Crossword grid */
+.crossword {
+  display: grid;
+  grid-template-columns: repeat(14, 34px);
+  grid-auto-rows: 34px;
+  width: max-content;
+  margin: 0 auto;
+  background: #080f1b;
+  border: 3px solid white;
+  border-radius: 12px;
+  padding: 16px;
+  gap: 1px;
+}
+
+.empty {
+  visibility: hidden;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.square {
+  position: relative;
+  background: white;
+  width: 34px;
+  height: 34px;
+}
+
+.square .num {
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  font-size: 9px;
+  color: #283747;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.square input {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--navy);
+  padding: 0;
+  outline: none;
+  caret-color: var(--blue);
+}
+
+.square input:focus {
+  background: #fff0a8;
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  position: relative;
+  z-index: 3;
+}
+
+.square.spacer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #18283d;
+  font-size: 15px;
+  font-weight: bold;
+  background: #eee;
+}
+
+.square.correct {
+  background: var(--good);
+}
+
+.square.incorrect {
+  background: var(--bad);
+}
+
+/* Buttons */
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  background: var(--blue);
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 18px;
+  cursor: pointer;
+}
+
+.btn.secondary {
+  background: #657789;
+}
+
+.btn:focus-visible,
+nav button:focus-visible {
+  outline: 3px solid #f3bb27;
+  outline-offset: 2px;
+}
+
+/* Results */
+#result {
+  display: none;
+  margin-top: 15px;
+  padding: 17px;
+  border-radius: 10px;
+  background: #173d30;
+  color: #effff4;
+  text-align: center;
+}
+
+#result h2 {
+  margin: 0 0 7px;
+  color: white;
+}
+
+#score {
+  font-size: 30px;
+  font-weight: 800;
+  color: white;
+}
+
+/* Across and Down instructions */
+.clue-list {
+  display: grid;
+  gap: 9px;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.clue {
+  padding: 12px;
+  border: 1px solid #405873;
+  border-radius: 9px;
+  background: #21364e;
+  color: #f2f6fc;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.clue strong {
+  color: var(--blue);
+  margin-right: 5px;
+}
+
+.clue button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.clue button:hover {
+  color: #8dccff;
+}
+
+.note {
+  background: #3b3420;
+  border-left: 4px solid #ffdf45;
+  color: #fff1bd;
+  text-align: center;
+  padding: 11px 13px;
+  border-radius: 5px;
+  line-height: 1.45;
+  margin-top: 12px;
+}
+
+.footer {
+  text-align: center;
+  color: #b7c5d6;
+  font-size: 12px;
+  padding: 15px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 520px) {
+  .wrap {
+    padding: 9px;
+  }
+
+  .panel {
+    padding: 12px;
+    width: 100%;
+  }
+
+  nav button {
+    font-size: 13px;
+    min-height: 48px;
+  }
+
+  .crossword {
+    grid-template-columns: repeat(14, 30px);
+    grid-auto-rows: 30px;
+    border-width: 2px;
+    padding: 12px;
+  }
+
+  .square {
+    width: 30px;
+    height: 30px;
+  }
+
+  .square input {
+    font-size: 17px;
+  }
+
+  .square .num {
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tab.active {
+    animation: appear .12s ease-out;
+  }
+
+  @keyframes appear {
+    from { opacity: .75; }
+    to { opacity: 1; }
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Sewwandige Puzzle Ek</h1>
+  <p>APS Crossword Challenge</p>
+</header>
+
+<nav role="tablist" aria-label="Puzzle navigation">
+  <button type="button" role="tab" id="tab-puzzle"
+    data-tab="puzzle" aria-controls="puzzle"
+    aria-selected="true">Puzzle</button>
+
+  <button type="button" role="tab" id="tab-across"
+    data-tab="across" aria-controls="across"
+    aria-selected="false">Across</button>
+
+  <button type="button" role="tab" id="tab-down"
+    data-tab="down" aria-controls="down"
+    aria-selected="false">Down</button>
+</nav>
+
+<main class="wrap">
+
+<section id="puzzle" class="tab active"
+  role="tabpanel" aria-labelledby="tab-puzzle">
+
+  <div class="panel">
+    <h2>Complete the crossword</h2>
+
+    <p class="muted">
+      Select a white box and enter one letter.
+      Letters are automatically converted to uppercase.
+      Grey boxes are not part of an answer.
+      On smaller screens, swipe horizontally if needed.
+    </p>
+
+    <div class="grid-scroll">
+      <div id="crossword" class="crossword"
+        aria-label="Crossword grid"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="submit" type="button">
+        Submit answers
+      </button>
+
+      <button class="btn secondary" id="reset" type="button">
+        Reset puzzle
+      </button>
+    </div>
+
+    <div id="result" aria-live="polite">
+      <h2>Your result</h2>
+      <div id="score"></div>
+      <p id="feedback"></p>
+    </div>
+
+    <div class="note">
+      <strong>Scoring note:</strong>
+      Across 1 has been left out of automatic scoring
+      because its final answer has not yet been confirmed.
+      You can add it later in the ANSWER KEY section.
+    </div>
+  </div>
+</section>
+
+<section id="across" class="tab"
+  role="tabpanel" aria-labelledby="tab-across" hidden>
+
+  <div class="panel">
+    <h2>Across clues</h2>
+    <p class="muted">
+      Select a clue to jump to its first crossword box.
+    </p>
+    <div id="across-list" class="clue-list"></div>
+  </div>
+</section>
+
+<section id="down" class="tab"
+  role="tabpanel" aria-labelledby="tab-down" hidden>
+
+  <div class="panel">
+    <h2>Down clues</h2>
+    <p class="muted">
+      Select a clue to jump to its first crossword box.
+    </p>
+    <div id="down-list" class="clue-list"></div>
+  </div>
+</section>
+
+</main>
+
+<div class="footer">
+  The Pulse · APS Crossword Challenge
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   ANSWER KEY
+   Change answer values when final answers are confirmed.
+   Use A-Z letters only. Spaces are automatically ignored.
+   Set answer: null to exclude a clue from scoring.
+   ============================================================ */
+
+const entries = [
+
+  // ACROSS
+
+  {
+    n:1, dir:'A', r:7, c:0,
+    breaks:[6],
+    answer:null,
+    clue:'What is the method used to identify risks as Low, Medium, or High and take appropriate actions? (2 words)'
+  },
+
+  {
+    n:2, dir:'A', r:3, c:5,
+    answer:'EHS',
+    clue:"Which Pillar focuses on protecting employees’ safety, health, and the environment? (1 word)"
+  },
+
+  {
+    n:3, dir:'A', r:10, c:2,
+    answer:'DH',
+    clue:'What is the abbreviation of the DMS used to correct a defect identified in a machine? (1 word)'
+  },
+
+  {
+    n:4, dir:'A', r:16, c:6,
+    answer:'QRP',
+    clue:'What tool is used to quickly identify potential risks before starting a non-routine task? (1 word)'
+  },
+
+  {
+    n:6, dir:'A', r:14, c:2,
+    answer:'CIL',
+    clue:'What is the abbreviation for Cleaning, Inspection, and Lubrication activities carried out on a machine? (1 word)'
+  },
+
+  {
+    n:7, dir:'A', r:2, c:11,
+    answer:'BOS',
+    clue:'What system is used to observe safe and unsafe behaviours of employees at work? (1 word)'
+  },
+
+  {
+    n:10, dir:'A', r:19, c:0,
+    answer:'CENTERLINE',
+    clue:'What are the standard parameters followed to maintain the correct settings of a machine or process called? (1 word)'
+  },
+
+  {
+    n:11, dir:'A', r:22, c:2,
+    answer:'IE',
+    clue:'Which DMS is used to identify risks before an accident occurs and prevent or control them? (1 word)'
+  },
+
+  {
+    n:13, dir:'A', r:12, c:6,
+    answer:'SWI',
+    clue:'What training method briefly explains one important point about a task or process to employees? (1 word)'
+  },
+
+  {
+    n:14, dir:'A', r:9, c:11,
+    answer:'AM',
+    clue:'Which Pillar represents the concept of “My Machine, My Responsibility”? (1 word)'
+  },
+
+  {
+    n:15, dir:'A', r:22, c:6,
+    answer:'YIELD',
+    clue:'What is the last word in FPY%? (1 word)'
+  },
+
+
+  // DOWN
+
+  {
+    n:1, dir:'D', r:7, c:0,
+    breaks:[4,10],
+    answer:'STOPTHINKACT',
+    clue:'What are the three reminder words followed in the QRP process? (3 words)'
+  },
+
+  {
+    n:2, dir:'D', r:3, c:5,
+    answer:'EO',
+    clue:'In the AM Pillar, what is the name of the person responsible for maintaining the basic condition, cleanliness, inspection, and maintenance of an assigned machine? (2 letters)'
+  },
+
+  {
+    n:3, dir:'D', r:10, c:2,
+    breaks:[6],
+    answer:'DEFECTHANDLING',
+    clue:'What is the process followed to identify machine defects, correct them, and prevent their recurrence? (14 letters)'
+  },
+
+  {
+    n:4, dir:'D', r:16, c:6,
+    answer:'QUALITY',
+    clue:'Which Pillar focuses on reducing product defects? (7 letters)'
+  },
+
+  {
+    n:5, dir:'D', r:3, c:7,
+    breaks:[6],
+    answer:'SAFETYMAP',
+    clue:'What is the safety guide that visually shows hazardous areas in a machine or workplace, their control measures, and the correct PPE to be worn? (9 letters)'
+  },
+
+  {
+    n:8, dir:'D', r:1, c:12,
+    breaks:[4],
+    answer:'WORKPERMIT',
+    clue:'What is the formal authorization system required to safely carry out high-risk activities? (9 letters stated in the clue)'
+  },
+
+  {
+    n:9, dir:'D', r:5, c:9,
+    answer:'CUSTOM',
+    clue:'What is the improvement made by the TPR AM Pilot Line team through the development of an AM trolley called? (6 letters)'
+  },
+
+  {
+    n:12, dir:'D', r:14, c:8,
+    answer:'SOP',
+    clue:'What are the standard instructions that must be followed to perform a task correctly and safely called? (3 letters)'
+  },
+
+  {
+    n:16, dir:'D', r:22, c:8,
+    answer:'ELEVEN',
+    clue:'How many Pillars are there in APS? (6 letters)'
+  }
+
+];
+
+
+/* Crossword dimensions */
+
+const ROWS = 28;
+const COLS = 14;
+
+const grid = document.getElementById('crossword');
+
+const cellMap = new Map();
+const inputMap = new Map();
+
+/* Automatic typing direction */
+
+let activeEntry = null;
+let lastClickedKey = null;
+
+const cellKey = (r,c) => `${r},${c}`;
+
+const norm = s =>
+  String(s || '').toUpperCase().replace(/[^A-Z]/g,'');
+
+
+/* Create each clue's crossword path */
+
+function pathFor(e) {
+
+  const length =
+    e.answer === null ? null : norm(e.answer).length;
+
+  const count = length !== null
+    ? length + (e.breaks || []).length + (e.blankBreaks || []).length
+    : 14;
+
+  const path = [];
+  let letterIndex = 0;
+
+  for (let i=0; i<count; i++) {
+
+    const r = e.r + (e.dir === 'D' ? i : 0);
+    const c = e.c + (e.dir === 'A' ? i : 0);
+
+    if (r >= ROWS || c >= COLS) break;
+
+    const isBlankBreak = (e.blankBreaks || []).includes(i);
+    const isBreak = (e.breaks || []).includes(i) || isBlankBreak;
+
+    path.push({
+      r,
+      c,
+      isBreak,
+      isBlankBreak,
+      letterIndex: isBreak ? null : letterIndex
+    });
+
+    if (!isBreak) letterIndex++;
+  }
+
+  return path;
+}
+
+entries.forEach(e => e.path = pathFor(e));
+
+
+/* Collect shared crossword cells */
+
+for (const e of entries) {
+
+  for (const p of e.path) {
+
+    const k = cellKey(p.r,p.c);
+
+    if (!cellMap.has(k)) {
+      cellMap.set(k,{
+        r:p.r,
+        c:p.c,
+        break:false,
+        blankBreak:false,
+        numbers:[],
+        entries:[]
+      });
+    }
+
+    const cell = cellMap.get(k);
+
+    cell.break = cell.break || p.isBreak;
+    cell.blankBreak = cell.blankBreak || p.isBlankBreak;
+    cell.entries.push(e);
+
+    if (
+      p.letterIndex === 0 &&
+      !cell.numbers.includes(String(e.n))
+    ) {
+      cell.numbers.push(String(e.n));
+    }
+  }
+}
+
+
+/* Draw the crossword */
+
+for (let r=0; r<ROWS; r++) {
+
+  for (let c=0; c<COLS; c++) {
+
+    const cell = cellMap.get(cellKey(r,c));
+    const el = document.createElement('div');
+
+    if (!cell) {
+      el.className = 'empty';
+      grid.appendChild(el);
+      continue;
+    }
+
+    el.className = 'square' +
+      (cell.break ? ' spacer' : '');
+
+    if (cell.numbers.length) {
+
+      const n = document.createElement('span');
+      n.className = 'num';
+
+      n.textContent = [
+        ...new Set(cell.numbers)
+      ].sort((a,b) => Number(a)-Number(b)).join(', ');
+
+      el.appendChild(n);
+    }
+
+    if (cell.break) {
+
+      if (!cell.blankBreak) el.textContent = '-';
+
+    } else {
+
+      const input = document.createElement('input');
+
+      input.type = 'text';
+      input.maxLength = 1;
+      input.autocomplete = 'off';
+      input.autocapitalize = 'characters';
+      input.spellcheck = false;
+      input.inputMode = 'text';
+
+      input.dataset.key = cellKey(r,c);
+
+      input.setAttribute(
+        'aria-label',
+        `Row ${r+1}, column ${c+1}`
+      );
+
+      /* Automatically detect typing direction */
+
+      input.addEventListener('click', () => {
+
+        const key = cellKey(r,c);
+        const candidates = cell.entries;
+
+        if (candidates.length === 1) {
+
+          activeEntry = candidates[0];
+
+        } else if (lastClickedKey === key && candidates.length > 1) {
+
+          const currentIndex = candidates.indexOf(activeEntry);
+
+          activeEntry = candidates[
+            (currentIndex + 1) % candidates.length
+          ];
+
+        } else if (!candidates.includes(activeEntry)) {
+
+          activeEntry =
+            candidates.find(e => e.dir === 'A') || candidates[0];
+        }
+
+        lastClickedKey = key;
+      });
+
+
+      /* Input and automatic movement */
+
+      input.addEventListener('input', () => {
+
+        input.value = input.value
+          .replace(/[^a-z]/gi,'')
+          .toUpperCase()
+          .slice(0,1);
+
+        clearResult();
+
+        if (input.value && activeEntry) {
+
+          const currentKey = cellKey(r,c);
+
+          const currentIndex = activeEntry.path.findIndex(
+            p => cellKey(p.r,p.c) === currentKey
+          );
+
+          if (currentIndex === -1) return;
+
+          // Find the next empty white cell in the selected direction.
+          for (
+            let i = currentIndex + 1;
+            i < activeEntry.path.length;
+            i++
+          ) {
+
+            const p = activeEntry.path[i];
+
+            // Ignore grey spacer cells.
+            if (p.isBreak) continue;
+
+            const next = inputMap.get(cellKey(p.r,p.c));
+
+            // Only move to an empty white cell.
+            if (next && !next.value) {
+              next.focus();
+              break;
+            }
+          }
+        }
+      });
+
+
+      /* Keyboard navigation */
+
+      input.addEventListener('keydown', ev => {
+
+        if (ev.key === 'Backspace' && !input.value) {
+
+          const prev = previousInput(input);
+          if (prev) prev.focus();
+
+        } else if (ev.key === 'ArrowRight') {
+
+          const next = nextInput(input);
+
+          if (next) {
+            ev.preventDefault();
+            next.focus();
+          }
+
+        } else if (ev.key === 'ArrowLeft') {
+
+          const prev = previousInput(input);
+
+          if (prev) {
+            ev.preventDefault();
+            prev.focus();
+          }
+        }
+      });
+
+      el.appendChild(input);
+
+      inputMap.set(cellKey(r,c),input);
+    }
+
+    grid.appendChild(el);
+  }
+}
+
+
+/* Input navigation */
+
+function nextInput(input) {
+
+  const all = [...grid.querySelectorAll('input')];
+
+  return all[all.indexOf(input)+1] || null;
+}
+
+function previousInput(input) {
+
+  const all = [...grid.querySelectorAll('input')];
+
+  return all[all.indexOf(input)-1] || null;
+}
+
+
+/* Navigation tabs */
+
+function openTab(name) {
+
+  document.querySelectorAll('nav [data-tab]')
+    .forEach(b => {
+
+      const active = b.dataset.tab === name;
+
+      b.setAttribute('aria-selected',String(active));
+      b.tabIndex = active ? 0 : -1;
+    });
+
+  document.querySelectorAll('.tab')
+    .forEach(s => {
+
+      const active = s.id === name;
+
+      s.classList.toggle('active',active);
+      s.hidden = !active;
+    });
+}
+
+document.querySelectorAll('nav [data-tab]')
+  .forEach(b => {
+
+    b.addEventListener('click',() => {
+      openTab(b.dataset.tab);
+    });
+  });
+
+
+/* Across and Down clue lists */
+
+function renderClues(direction,target) {
+
+  const host = document.getElementById(target);
+
+  entries
+    .filter(e => e.dir === direction)
+    .forEach(e => {
+
+      const item = document.createElement('div');
+      item.className = 'clue';
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+
+      const label = document.createElement('strong');
+      label.textContent = `${e.n}. `;
+
+      btn.appendChild(label);
+      btn.appendChild(
+        document.createTextNode(e.clue)
+      );
+
+      btn.addEventListener('click',() => {
+
+        // Selecting a clue sets the typing direction.
+        activeEntry = e;
+        lastClickedKey = null;
+
+        openTab('puzzle');
+
+        const first = e.path.find(p => !p.isBreak);
+
+        if (!first) return;
+
+        const input = inputMap.get(
+          cellKey(first.r,first.c)
+        );
+
+        if (input) {
+
+          input.focus();
+
+          input.scrollIntoView({
+            behavior:'smooth',
+            block:'center',
+            inline:'center'
+          });
+        }
+      });
+
+      item.appendChild(btn);
+      host.appendChild(item);
+    });
+}
+
+renderClues('A','across-list');
+renderClues('D','down-list');
+
+
+/* Clear previous evaluation */
+
+function clearResult() {
+
+  document.getElementById('result').style.display = 'none';
+
+  grid.querySelectorAll('.square').forEach(x => {
+    x.classList.remove('correct','incorrect');
+  });
+}
+
+
+/* Read an answer */
+
+function entryValue(e) {
+
+  return e.path
+    .filter(p => !p.isBreak)
+    .map(p =>
+      inputMap.get(cellKey(p.r,p.c))?.value || ''
+    )
+    .join('');
+}
+
+
+/* Evaluate crossword */
+
+document.getElementById('submit')
+  .addEventListener('click',() => {
+
+    clearResult();
+
+    const graded = entries.filter(
+      e => e.answer !== null
+    );
+
+    let correct = 0;
+
+    for (const e of graded) {
+
+      const ok =
+        norm(entryValue(e)) === norm(e.answer);
+
+      if (ok) correct++;
+
+      for (const p of e.path) {
+
+        if (p.isBreak) continue;
+
+        const input = inputMap.get(
+          cellKey(p.r,p.c)
+        );
+
+        if (input) {
+          input.parentElement.classList.add(
+            ok ? 'correct' : 'incorrect'
+          );
+        }
+      }
+    }
+
+    const pct = graded.length
+      ? Math.round(correct / graded.length * 100)
+      : 0;
+
+    document.getElementById('score').textContent =
+      `${correct} / ${graded.length} correct (${pct}%)`;
+
+    document.getElementById('feedback').textContent =
+      `${entries.length-graded.length} clue(s) are not included until their answer keys are confirmed.`;
+
+    document.getElementById('result').style.display = 'block';
+  });
+
+
+/* Reset puzzle */
+
+document.getElementById('reset')
+  .addEventListener('click',() => {
+
+    if (!confirm('Clear all crossword answers?')) return;
+
+    inputMap.forEach(input => {
+      input.value = '';
+    });
+
+    activeEntry = null;
+    lastClickedKey = null;
+
+    clearResult();
+  });
+
+
+/* Open Puzzle by default */
+
+openTab('puzzle');
+
+</script>
+
+</body>
+</html>
